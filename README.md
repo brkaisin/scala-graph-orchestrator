@@ -161,10 +161,10 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE.txt) f
 - [ ] **Write tests:** Add unit and integration tests.
 - [ ] **Handle multiple input compositions on a node:** Extend node logic to handle multiple input streams or 
 compositions.
+- [ ] **Handle dynamism more effectively:** Improve the handling of dynamic graph updates and node additions/removals.
+For example, what about current tasks when the graph changes?
 - [ ] **Error handling and retry policies:** Implement robust error-handling mechanisms and configurable retry policies.
 - [ ] **Monitoring and real-time visualization of the graph:** Integrate tools to monitor and visualize the graph 
 execution in real-time.
 - [ ] **Distribute the architecture with Pekko Cluster:** Scale the system by distributing nodes across a Pekko Cluster.
-- [ ] **Support for gRPC and other asynchronous protocols:** Add gRPC and other remote communication protocols for 
-distributed node interactions.
 - [ ] **Documentation and examples:** Provide thorough documentation and code examples for developers.

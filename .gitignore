@@ -1,0 +1,12 @@
+target
+**/.DS_Store
+.java-version
+/.metals
+/.bloop
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+project/metals.sbt
+.bsp

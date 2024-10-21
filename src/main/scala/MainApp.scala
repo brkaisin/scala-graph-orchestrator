@@ -1,12 +1,11 @@
-import be.brkaisin.graph.orchestrator.core.NodeActor.Command
-import be.brkaisin.graph.orchestrator.models.Node.NodeId
 import be.brkaisin.graph.orchestrator.core.Orchestrator
+import be.brkaisin.graph.orchestrator.core.Orchestrator.Command.*
+import be.brkaisin.graph.orchestrator.core.Orchestrator.Confirmation.*
+import be.brkaisin.graph.orchestrator.models.Node.NodeId
 import be.brkaisin.graph.orchestrator.models.{Edge, Node}
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 import zio.*
-import be.brkaisin.graph.orchestrator.core.Orchestrator.Command.*
-import be.brkaisin.graph.orchestrator.core.Orchestrator.Confirmation.*
 
 object MainApp extends App:
 

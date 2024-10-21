@@ -126,8 +126,7 @@ appropriate error message is logged.
 
 ## Installation
 
-To run the project, ensure that you have [sbt](https://www.scala-sbt.org/) and Java installed on your system. 
-system.
+To run the project, ensure that you have [sbt](https://www.scala-sbt.org/) and Java installed on your system.
 
 ### Steps:
 

@@ -134,10 +134,12 @@ object Orchestrator:
           result match
             case Success(output) =>
               context.log.info(
-                s"Node $nodeId executed successfully announced its output: $output"
+                s"Node $nodeId successfully announced its output: $output"
               )
             case Failure(error) =>
-              context.log.error(s"Node $nodeId announced a failure: $error")
+              context.log.error(
+                s"Node $nodeId successfully announced a failure: $error"
+              )
           Behaviors.same
       }
   }

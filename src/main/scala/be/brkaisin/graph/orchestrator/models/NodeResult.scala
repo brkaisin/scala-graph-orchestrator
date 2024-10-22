@@ -10,9 +10,3 @@ package be.brkaisin.graph.orchestrator.models
 enum NodeResult[+O, +E]:
   case Success(output: O)
   case Failure(error: E)
-
-object NodeResult:
-  final case class NodeIdWithResult[O, E](
-      id: Node.NodeId,
-      result: NodeResult[O, E]
-  )

@@ -77,12 +77,11 @@ object OptionFields:
           .asInstanceOf[Product]
           .productIterator
           .zip(updates.asInstanceOf[Product].productIterator)
-          .zip(elemInstances.iterator)
           .map {
-            case ((Some(_), Some(updated)), _) => Some(updated)
-            case ((None, Some(updated)), _)    => Some(updated)
-            case ((existing, None), _)         => existing
-            case ((_, updated), _)             => updated
+            case (Some(_), Some(updated)) => Some(updated)
+            case (None, Some(updated))    => Some(updated)
+            case (existing, None)         => existing
+            case (_, updated)             => updated
           }
           .toList
 

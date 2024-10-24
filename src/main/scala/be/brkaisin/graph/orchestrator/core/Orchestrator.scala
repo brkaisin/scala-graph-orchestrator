@@ -10,7 +10,7 @@ import zio.*
 object Orchestrator:
 
   enum Command:
-    case AddNode[I, O, E](
+    case AddNode[I <: Product, O, E](
         node: Node[I, O, E],
         replyTo: ActorRef[Confirmation]
     )
@@ -18,7 +18,7 @@ object Orchestrator:
         id: NodeId,
         replyTo: ActorRef[Confirmation]
     )
-    case ExecuteNode[I, O, E](
+    case ExecuteNode[I <: Product, O, E](
         node: Node[I, O, E],
         input: I,
         replyTo: ActorRef[Confirmation]
@@ -71,7 +71,7 @@ object Orchestrator:
 
           // spawn node actor without dependencies (they will be updated later)
           val nodeActor = context.spawn(
-            NodeActor(node, List.empty, resultAdapter),
+            NodeActor(node, List.empty, resultAdapter)(using trace, unsafe, node.optionFields),
             s"node-${node.id}"
           )
 
@@ -101,7 +101,11 @@ object Orchestrator:
           )
 
           state.nodeActors.get(node.id).foreach { actor =>
-            actor ! Input(input)
+            // Send each field of the input separately as an InputField command
+            val inputIterator = input.productIterator.zipWithIndex
+            inputIterator.foreach { case (field, index) =>
+              actor ! InputField(index, field)
+            }
           }
           replyTo ! Ack
           Behaviors.same

@@ -13,7 +13,7 @@ case class Graph(
     edges: List[Edge]
 ):
 
-  def addNode[I, O, E](node: Node[I, O, E]): Graph =
+  def addNode[I <: Product, O, E](node: Node[I, O, E]): Graph =
     copy(nodes = nodes + (node.id -> node))
 
   def removeNode(id: NodeId): Graph =
@@ -25,10 +25,8 @@ case class Graph(
   def addEdge(edge: Edge): Graph =
     copy(edges = edge :: edges)
 
-  def findDependentNodes(id: NodeId): List[NodeId] =
-    edges.collect {
-      case Edge(sourceId, targetId) if sourceId == id => targetId
-    }
+  def findDependentEdges(id: NodeId): List[Edge] =
+    edges.filter(_.from == id)
 
 object Graph:
   def empty: Graph = Graph(Map.empty, List.empty)

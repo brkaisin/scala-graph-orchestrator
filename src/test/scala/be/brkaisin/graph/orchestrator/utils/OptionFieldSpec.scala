@@ -12,7 +12,7 @@ case class Product(
 )
 class OptionFieldsSpec extends AnyFunSuite:
 
-  // Define an implicit instance lookup method for empty
+  // implicit instance lookup method for empty
   def empty[A](using optionFields: OptionFields[A]): A = optionFields.empty
 
   test("isComplete should return true when all fields are defined") {

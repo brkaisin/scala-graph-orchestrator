@@ -4,11 +4,11 @@ import scala.deriving.*
 import scala.compiletime.{erasedValue, summonInline}
 import scala.Tuple
 
-trait OptionFields[A]:
-  def isComplete(value: A): Boolean
-  def merge(existing: A, updates: A): A
-  def mergeField[T](existing: A, index: Int, newValue: Option[T]): A
-  def empty: A
+trait OptionFields[T]:
+  def isComplete(value: T): Boolean
+  def merge(existing: T, updates: T): T
+  def mergeField[U](existing: T, index: Int, newValue: Option[U]): T
+  def empty: T
 
 object OptionFields:
 
@@ -30,14 +30,11 @@ object OptionFields:
 
     def empty: Option[T] = None
 
-  extension [A](a: A)(using optionFields: OptionFields[A])
-    def isComplete: Boolean = optionFields.isComplete(a)
-    def merge(other: A): A  = optionFields.merge(a, other)
-    def mergeField[T](index: Int, newValue: Option[T]): A =
-      optionFields.mergeField(a, index, newValue)
-
-  // helper method to obtain empty instances
-  def empty[A](using optionFields: OptionFields[A]): A = optionFields.empty
+  extension [T](t: T)(using optionFields: OptionFields[T])
+    def isComplete: Boolean = optionFields.isComplete(t)
+    def merge(other: T): T  = optionFields.merge(t, other)
+    def mergeField[U](index: Int, newValue: Option[U]): T =
+      optionFields.mergeField(t, index, newValue)
 
   // type class to derive OptionFields for all elements of a tuple
   trait TupleOptionFields[T <: Tuple]:
@@ -54,14 +51,14 @@ object OptionFields:
       def instances: List[OptionFields[?]] = head :: tail.instances
 
   // Derive OptionFields for a case class using a Mirror
-  given derived[A](using
-      m: Mirror.ProductOf[A],
+  given derived[T](using
+      m: Mirror.ProductOf[T],
       elems: TupleOptionFields[m.MirroredElemTypes]
-  ): OptionFields[A] =
+  ): OptionFields[T] =
     val elemInstances = elems.instances
 
-    new OptionFields[A]:
-      def isComplete(value: A): Boolean =
+    new OptionFields[T]:
+      def isComplete(value: T): Boolean =
         value
           .asInstanceOf[Product]
           .productIterator
@@ -72,7 +69,7 @@ object OptionFields:
             case _            => true // Non-Option fields are assumed complete
           }
 
-      def merge(existing: A, updates: A): A =
+      def merge(existing: T, updates: T): T =
         val mergedValues = existing
           .asInstanceOf[Product]
           .productIterator
@@ -87,7 +84,7 @@ object OptionFields:
 
         createInstance(mergedValues)
 
-      def mergeField[T](existing: A, index: Int, newValue: Option[T]): A =
+      def mergeField[U](existing: T, index: Int, newValue: Option[U]): T =
         val values = existing.asInstanceOf[Product].productIterator.toArray
 
         val updatedValues = values.zipWithIndex.map {
@@ -100,11 +97,11 @@ object OptionFields:
 
         createInstance(updatedValues.toList)
 
-      def empty: A =
+      def empty: T =
         val emptyValues = elemInstances.map(_ => None)
         createInstance(emptyValues)
 
-  private def createInstance[A](values: List[Any])(using
-      m: Mirror.ProductOf[A]
-  ): A =
+  private def createInstance[T](values: List[Any])(using
+      m: Mirror.ProductOf[T]
+  ): T =
     m.fromProduct(Tuple.fromArray(values.toArray))

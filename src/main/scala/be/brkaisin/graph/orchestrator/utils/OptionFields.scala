@@ -1,8 +1,7 @@
 package be.brkaisin.graph.orchestrator.utils
 
-import scala.deriving.*
-import scala.compiletime.{erasedValue, summonInline}
 import scala.Tuple
+import scala.deriving.*
 
 trait OptionFields[T]:
   def isComplete(value: T): Boolean
@@ -62,11 +61,10 @@ object OptionFields:
         value
           .asInstanceOf[Product]
           .productIterator
-          .zip(elemInstances.iterator)
           .forall {
-            case (Some(_), _) => true
-            case (None, _)    => false
-            case _            => true // Non-Option fields are assumed complete
+            case Some(_) => true
+            case None    => false
+            case _       => true // non-Option fields are assumed complete
           }
 
       def merge(existing: T, updates: T): T =

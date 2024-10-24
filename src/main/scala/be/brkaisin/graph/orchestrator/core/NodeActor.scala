@@ -4,6 +4,7 @@ import be.brkaisin.graph.orchestrator.models.Node.NodeId
 import be.brkaisin.graph.orchestrator.models.NodeResult.*
 import be.brkaisin.graph.orchestrator.models.{Graph, Node, NodeResult}
 import be.brkaisin.graph.orchestrator.utils.OptionFields
+import be.brkaisin.graph.orchestrator.utils.OptionFields.*
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 import zio.*
@@ -59,9 +60,9 @@ object NodeActor:
             case _                 => Option(value)
 
           val updatedInput =
-            fields.mergeField(accumulated.input, index, wrappedValue)
+            accumulated.input.mergeField(index, wrappedValue)
 
-          if fields.isComplete(updatedInput) then
+          if updatedInput.isComplete then
             context.log.info(
               s"Node ${node.id} received complete input: $updatedInput"
             )

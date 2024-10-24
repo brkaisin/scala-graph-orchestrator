@@ -30,6 +30,15 @@ object OptionFields:
 
     def empty: Option[T] = None
 
+  extension [A](a: A)(using optionFields: OptionFields[A])
+    def isComplete: Boolean = optionFields.isComplete(a)
+    def merge(other: A): A  = optionFields.merge(a, other)
+    def mergeField[T](index: Int, newValue: Option[T]): A =
+      optionFields.mergeField(a, index, newValue)
+
+  // helper method to obtain empty instances
+  def empty[A](using optionFields: OptionFields[A]): A = optionFields.empty
+
   // type class to derive OptionFields for all elements of a tuple
   trait TupleOptionFields[T <: Tuple]:
     def instances: List[OptionFields[?]]
@@ -44,7 +53,7 @@ object OptionFields:
     ): TupleOptionFields[H *: T] with
       def instances: List[OptionFields[?]] = head :: tail.instances
 
-  // derive OptionFields for a case class using a Mirror
+  // Derive OptionFields for a case class using a Mirror
   given derived[A](using
       m: Mirror.ProductOf[A],
       elems: TupleOptionFields[m.MirroredElemTypes]
@@ -84,7 +93,6 @@ object OptionFields:
 
         val updatedValues = values.zipWithIndex.map {
           case (value, i) if i == index =>
-            // Handle the newValue correctly by unwrapping if it’s already an Option
             newValue match
               case Some(optVal: Option[?]) => optVal
               case _                       => newValue

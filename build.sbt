@@ -9,7 +9,8 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-actor-typed" % "1.1.2",
       "ch.qos.logback" % "logback-classic" % "1.5.11",
-      "dev.zio" %% "zio" % "2.1.11"
+      "dev.zio" %% "zio" % "2.1.11",
+      "org.scalatest" %% "scalatest" % "3.2.18" % Test
     ),
     scalacOptions ++= Seq(
       "-deprecation",

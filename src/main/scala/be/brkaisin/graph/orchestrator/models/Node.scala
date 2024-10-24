@@ -2,12 +2,15 @@ package be.brkaisin.graph.orchestrator.models
 
 import Node.NodeId
 import zio.ZIO
+import be.brkaisin.graph.orchestrator.utils.OptionFields
 
 /** Represents a node in a graph.
   * @param id
   *   the unique identifier of the node
   * @param compute
   *   the function that computes the output of the node given an input
+  * @param optionFields
+  *   an implicit instance of OptionFields for the input type I
   * @tparam I
   *   the input type of the node
   * @tparam O
@@ -15,10 +18,10 @@ import zio.ZIO
   * @tparam E
   *   the error type of the node
   */
-case class Node[-I, +O, +E](
+case class Node[I <: Product, +O, +E](
     id: NodeId,
     compute: I => ZIO[Any, E, O]
-)
+)(using val optionFields: OptionFields[I])
 
 object Node:
   opaque type NodeId = String

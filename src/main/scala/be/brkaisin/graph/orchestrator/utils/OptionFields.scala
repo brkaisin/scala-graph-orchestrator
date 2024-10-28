@@ -77,9 +77,7 @@ object OptionFields:
         createInstance(mergedValues)
 
       def mergeField[U](existing: T, index: Int, newValue: Option[U]): T =
-        val values = existing.productIterator.toArray
-
-        val updatedValues = values.zipWithIndex.map {
+        val updatedValues = existing.productIterator.toList.zipWithIndex.map {
           case (value, i) if i == index =>
             newValue match
               case Some(optVal: Option[?]) => optVal
@@ -87,12 +85,11 @@ object OptionFields:
           case (value, _) => value
         }
 
-        createInstance(updatedValues.toList)
+        createInstance(updatedValues)
 
       def empty: T =
         createInstance(elems.instances.map(_ => None))
 
-  private def createInstance[T](values: List[Any])(using
+  private def createInstance[T](values: List[?])(using
       m: Mirror.ProductOf[T]
-  ): T =
-    m.fromProduct(Tuple.fromArray(values.toArray))
+  ): T = m.fromProduct(Tuple.fromArray(values.toArray))

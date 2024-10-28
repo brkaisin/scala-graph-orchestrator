@@ -3,6 +3,7 @@ package be.brkaisin.graph.orchestrator.core
 import be.brkaisin.graph.orchestrator.models.Node.NodeId
 import be.brkaisin.graph.orchestrator.models.NodeResult.*
 import be.brkaisin.graph.orchestrator.models.{Edge, Graph, Node, NodeResult}
+import be.brkaisin.graph.orchestrator.utils.OptionFields
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 import zio.*
@@ -13,7 +14,7 @@ object Orchestrator:
     case AddNode[I <: Product, O, E](
         node: Node[I, O, E],
         replyTo: ActorRef[Confirmation]
-    )
+    )(using val optionFields: OptionFields[I])
     case RemoveNode(
         id: NodeId,
         replyTo: ActorRef[Confirmation]
@@ -57,7 +58,8 @@ object Orchestrator:
   )(using trace: Trace, unsafe: Unsafe): Behavior[Command] = Behaviors.setup {
     context =>
       Behaviors.receiveMessage {
-        case AddNode(node, replyTo) =>
+        case command @ AddNode(node, replyTo) =>
+          import command.optionFields
           context.log.info(s"Adding node with ID: ${node.id}")
 
           val resultAdapter: ActorRef[NodeResult[?, ?]] =
@@ -71,7 +73,7 @@ object Orchestrator:
 
           // spawn node actor without dependencies (they will be updated later)
           val nodeActor = context.spawn(
-            NodeActor(node, List.empty, resultAdapter)(using trace, unsafe, node.optionFields),
+            NodeActor(node, List.empty, resultAdapter),
             s"node-${node.id}"
           )
 

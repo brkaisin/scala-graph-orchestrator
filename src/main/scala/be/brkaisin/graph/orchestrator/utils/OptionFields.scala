@@ -53,42 +53,41 @@ object OptionFields:
   given derived[T <: Product](using
       m: Mirror.ProductOf[T],
       elems: TupleOptionFields[m.MirroredElemTypes]
-  ): OptionFields[T] =
-    new OptionFields[T]:
-      def isComplete(value: T): Boolean =
-        value.productIterator
-          .forall {
-            case Some(_) => true
-            case None    => false
-            case _       => true // non-Option fields are assumed complete
-          }
-
-      def merge(existing: T, updates: T): T =
-        val mergedValues = existing.productIterator
-          .zip(updates.productIterator)
-          .map {
-            case (Some(_), Some(updated)) => Some(updated)
-            case (None, Some(updated))    => Some(updated)
-            case (existing, None)         => existing
-            case (_, updated)             => updated
-          }
-          .toList
-
-        createInstance(mergedValues)
-
-      def mergeField[U](existing: T, index: Int, newValue: Option[U]): T =
-        val updatedValues = existing.productIterator.toList.zipWithIndex.map {
-          case (value, i) if i == index =>
-            newValue match
-              case Some(optVal: Option[?]) => optVal
-              case _                       => newValue
-          case (value, _) => value
+  ): OptionFields[T] with
+    def isComplete(value: T): Boolean =
+      value.productIterator
+        .forall {
+          case Some(_) => true
+          case None    => false
+          case _       => true // non-Option fields are assumed complete
         }
 
-        createInstance(updatedValues)
+    def merge(existing: T, updates: T): T =
+      val mergedValues = existing.productIterator
+        .zip(updates.productIterator)
+        .map {
+          case (Some(_), Some(updated)) => Some(updated)
+          case (None, Some(updated))    => Some(updated)
+          case (existing, None)         => existing
+          case (_, updated)             => updated
+        }
+        .toList
 
-      def empty: T =
-        createInstance(elems.instances.map(_ => None))
+      createInstance(mergedValues)
+
+    def mergeField[U](existing: T, index: Int, newValue: Option[U]): T =
+      val updatedValues = existing.productIterator.toList.zipWithIndex.map {
+        case (value, i) if i == index =>
+          newValue match
+            case Some(optVal: Option[?]) => optVal
+            case _                       => newValue
+        case (value, _) => value
+      }
+
+      createInstance(updatedValues)
+
+    def empty: T =
+      createInstance(elems.instances.map(_ => None))
 
   private def createInstance[T](values: List[?])(using
       m: Mirror.ProductOf[T]

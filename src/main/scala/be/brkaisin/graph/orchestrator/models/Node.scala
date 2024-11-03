@@ -5,6 +5,8 @@ import be.brkaisin.graph.orchestrator.models.Node.NodeId
 import be.brkaisin.graph.orchestrator.utils.OptionFields
 import zio.ZIO
 
+import scala.deriving.Mirror
+
 /** Represents a node in a graph.
   * @param id
   *   the unique identifier of the node
@@ -35,3 +37,12 @@ object Node:
       node: Node[I, O, E]
   )(using OptionFields[OptionsTuple[I]]): Node[OptionsTuple[I], O, E] =
     node.contraMap(getTupleOptions)
+
+  def withCaseClassInput[P <: Product, O, E](
+      id: NodeId,
+      compute: P => ZIO[Any, E, O]
+  )(using m: Mirror.ProductOf[P]): Node[m.MirroredElemTypes, O, E] =
+    Node(
+      id,
+      (input: m.MirroredElemTypes) => compute(m.fromProduct(input))
+    )

@@ -13,10 +13,12 @@ object MainApp extends App:
 
   extension [T](tuple1: Tuple1[T]) implicit inline def extract: T = tuple1._1
 
+  case class NodeAInput(value: String)
+
   val nodeA: Node[Tuple1[String], Int, Throwable] =
-    Node(
+    Node.withCaseClassInput[NodeAInput, Int, Throwable](
       NodeId("A"),
-      input => ZIO.succeed(input.length).delay(1.second)
+      input => ZIO.succeed(input.value.length).delay(1.second)
     )
 
   val nodeB: Node[Tuple1[Int], Double, Throwable] =

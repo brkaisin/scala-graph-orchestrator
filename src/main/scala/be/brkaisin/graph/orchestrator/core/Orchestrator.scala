@@ -1,6 +1,7 @@
 package be.brkaisin.graph.orchestrator.core
 
-import be.brkaisin.graph.orchestrator.models.Node.NodeId
+import be.brkaisin.graph.orchestrator.globals.OptionsTuple
+import be.brkaisin.graph.orchestrator.models.Node.{liftInputToOptions, NodeId}
 import be.brkaisin.graph.orchestrator.models.NodeResult.*
 import be.brkaisin.graph.orchestrator.models.{Edge, Graph, Node, NodeResult}
 import be.brkaisin.graph.orchestrator.utils.OptionFields
@@ -11,15 +12,15 @@ import zio.*
 object Orchestrator:
 
   enum Command:
-    case AddNode[I <: Product, O, E](
+    case AddNode[I <: Tuple, O, E](
         node: Node[I, O, E],
         replyTo: ActorRef[Confirmation]
-    )(using val optionFields: OptionFields[I])
+    )(using val optionFields: OptionFields[OptionsTuple[I]])
     case RemoveNode(
         id: NodeId,
         replyTo: ActorRef[Confirmation]
     )
-    case ExecuteNode[I <: Product, O, E](
+    case ExecuteNode[I <: Tuple, O, E](
         node: Node[I, O, E],
         input: I,
         replyTo: ActorRef[Confirmation]
@@ -73,7 +74,7 @@ object Orchestrator:
 
           // spawn node actor without dependencies (they will be updated later)
           val nodeActor = context.spawn(
-            NodeActor(node, List.empty, resultAdapter),
+            NodeActor(Node.liftInputToOptions(node), List.empty, resultAdapter),
             s"node-${node.id}"
           )
 
@@ -103,9 +104,8 @@ object Orchestrator:
           )
 
           state.nodeActors.get(node.id).foreach { actor =>
-            // Send each field of the input separately as an InputField command
-            val inputIterator = input.productIterator.zipWithIndex
-            inputIterator.foreach { case (field, index) =>
+            // send each field of the input separately as an InputField command
+            input.productIterator.zipWithIndex.foreach { case (field, index) =>
               actor ! InputField(index, field)
             }
           }

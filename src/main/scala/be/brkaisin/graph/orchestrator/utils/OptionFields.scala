@@ -5,6 +5,7 @@ import scala.deriving.*
 
 trait OptionFields[T]:
   def isComplete(value: T): Boolean
+  def isIncomplete(value: T): Boolean = !isComplete(value)
   def merge(existing: T, updates: T): T
   def mergeField[U](existing: T, index: Int, newValue: Option[U]): T
   def empty: T
@@ -31,6 +32,7 @@ object OptionFields:
 
   extension [T](t: T)(using optionFields: OptionFields[T])
     def isComplete: Boolean = optionFields.isComplete(t)
+    def isIncomplete: Boolean = optionFields.isIncomplete(t)
     def merge(other: T): T  = optionFields.merge(t, other)
     def mergeField[U](index: Int, newValue: Option[U]): T =
       optionFields.mergeField(t, index, newValue)

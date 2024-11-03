@@ -13,7 +13,7 @@ case class Graph(
     edges: List[Edge]
 ):
 
-  def addNode[I <: Product, O, E](node: Node[I, O, E]): Graph =
+  def addNode[I <: Tuple, O, E](node: Node[I, O, E]): Graph =
     copy(nodes = nodes + (node.id -> node))
 
   def removeNode(id: NodeId): Graph =

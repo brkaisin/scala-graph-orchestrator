@@ -24,10 +24,10 @@ object NodeActor:
   import Command.*
 
   /** Actor's state representing the accumulated input */
-  case class AccumulatedInput[I <: Product](input: I)
+  case class AccumulatedInput[I <: Tuple](input: I)
 
   /** Applies the NodeActor behavior */
-  def apply[I <: Product, O, E](
+  def apply[I <: Tuple, O, E](
       node: Node[I, O, E],
       dependencies: List[(ActorRef[InputField[O]], Int)],
       replyTo: ActorRef[NodeResult[O, E]]
@@ -39,7 +39,7 @@ object NodeActor:
     running(node, dependencies, replyTo, AccumulatedInput(fields.empty))
 
   /** Behavior of the NodeActor when it's running */
-  def running[I <: Product, O, E](
+  def running[I <: Tuple, O, E](
       node: Node[I, O, E],
       dependencies: List[(ActorRef[InputField[O]], Int)],
       replyTo: ActorRef[NodeResult[O, E]],
@@ -113,7 +113,7 @@ object NodeActor:
     }
 
   /** Behavior of the NodeActor when it's paused */
-  def paused[I <: Product, O, E](
+  def paused[I <: Tuple, O, E](
       node: Node[I, O, E],
       dependencies: List[(ActorRef[InputField[O]], Int)],
       replyTo: ActorRef[NodeResult[O, E]],

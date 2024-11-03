@@ -1,54 +1,44 @@
 import be.brkaisin.graph.orchestrator.core.Orchestrator
 import be.brkaisin.graph.orchestrator.core.Orchestrator.Command.*
-import be.brkaisin.graph.orchestrator.core.Orchestrator.Confirmation.*
 import be.brkaisin.graph.orchestrator.models.Node.NodeId
 import be.brkaisin.graph.orchestrator.models.{Edge, Node}
-import be.brkaisin.graph.orchestrator.utils.OptionFields
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.actor.typed.{ActorRef, ActorSystem}
 import zio.*
+import scala.language.implicitConversions
 
 object MainApp extends App:
 
   given trace: Trace = Trace.empty
 
-  // Define case classes for node inputs with Option fields
-  case class NodeAInput(value: Option[String]) extends Product
-  case class NodeBInput(value: Option[Int]) extends Product
-  case class NodeCInput(value: Option[Double]) extends Product
-  case class NodeDInput(intValue: Option[Int], doubleValue: Option[Double])
-      extends Product
+  extension [T](tuple1: Tuple1[T]) implicit inline def extract: T = tuple1._1
 
-  // Define nodes with case classes as input
-  val nodeA: Node[NodeAInput, Int, Throwable] =
-    Node[NodeAInput, Int, Throwable](
+  val nodeA: Node[Tuple1[String], Int, Throwable] =
+    Node(
       NodeId("A"),
-      input => ZIO.succeed(input.value.getOrElse("").length).delay(1.second)
+      input => ZIO.succeed(input.length).delay(1.second)
     )
 
-  val nodeB: Node[NodeBInput, Double, Throwable] =
-    Node[NodeBInput, Double, Throwable](
+  val nodeB: Node[Tuple1[Int], Double, Throwable] =
+    Node(
       NodeId("B"),
-      input =>
-        ZIO.succeed(input.value.getOrElse(0).toDouble * 2.0).delay(2.seconds)
+      input => ZIO.succeed(input * 2.0).delay(2.seconds)
     )
 
-  val nodeC: Node[NodeCInput, Int, Throwable] =
-    Node[NodeCInput, Int, Throwable](
+  val nodeC: Node[Tuple1[Double], Int, Throwable] =
+    Node(
       NodeId("C"),
-      input => ZIO.succeed(input.value.getOrElse(0.0).toInt)
+      input => ZIO.succeed(input.toInt).delay(1.second)
     )
 
-  // New node with multiple inputs (Node D)
-  val nodeD: Node[NodeDInput, String, Throwable] =
-    Node[NodeDInput, String, Throwable](
+  // new node with multiple inputs
+  val nodeD: Node[(Int, Double), String, Throwable] =
+    Node(
       NodeId("D"),
-      input =>
+      (int, double) =>
         ZIO
           .succeed {
-            val intPart    = input.intValue.getOrElse(0)
-            val doublePart = input.doubleValue.getOrElse(0.0)
-            s"Processed values: int = $intPart, double = $doublePart"
+            s"Processed values: int = $int, double = $double"
           }
           .delay(1.second)
     )
@@ -95,10 +85,10 @@ object MainApp extends App:
     // Execute Node A with case class input
     orchestratorSystem ! ExecuteNode(
       nodeA,
-      NodeAInput(Some("Hello")),
+      Tuple1("Hello"),
       confirmationActor
     )
 
-    // Wait to allow the processing to complete before the application exits
+    // wait to allow the processing to complete before the application exits
     Thread.sleep(10000)
   }

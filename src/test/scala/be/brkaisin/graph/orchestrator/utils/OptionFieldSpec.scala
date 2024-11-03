@@ -82,11 +82,11 @@ class OptionFieldsSpec extends AnyFunSuite:
   test("empty instance should be incomplete for User") {
     val emptyUser = empty[User]
 
-    assert(!emptyUser.isComplete)
+    assert(emptyUser.isIncomplete)
   }
 
   test("empty instance should be incomplete for Product") {
     val emptyProduct = empty[Product]
 
-    assert(!emptyProduct.isComplete)
+    assert(emptyProduct.isIncomplete)
   }

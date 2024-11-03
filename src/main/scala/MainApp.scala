@@ -57,7 +57,7 @@ object MainApp extends App:
         "confirmation-actor"
       )
 
-    // Add nodes and edges
+    // add nodes and edges
     orchestratorSystem ! AddNode(nodeA, confirmationActor)
     orchestratorSystem ! AddNode(nodeB, confirmationActor)
     orchestratorSystem ! AddNode(nodeC, confirmationActor)
@@ -73,7 +73,7 @@ object MainApp extends App:
       confirmationActor
     )
 
-    // Link outputs of Node B and Node C to Node D as different fields
+    // link outputs of Node B and Node C to Node D as different fields
     orchestratorSystem ! AddEdge(
       Edge(nodeC.id, nodeD.id, 0),
       confirmationActor
@@ -84,7 +84,7 @@ object MainApp extends App:
       confirmationActor
     )
 
-    // Execute Node A with case class input
+    // execute Node A with tuple input
     orchestratorSystem ! ExecuteNode(
       nodeA,
       Tuple1("Hello"),

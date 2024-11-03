@@ -86,8 +86,6 @@ object NodeActor:
                 context.log.error(
                   s"Node ${node.id} failed with cause: ${cause.squash}"
                 )
-          // This cannot happen, we have a Cause[Nothing]
-
           running(node, dependencies, replyTo, AccumulatedInput(updatedInput))
 
         case Pause =>

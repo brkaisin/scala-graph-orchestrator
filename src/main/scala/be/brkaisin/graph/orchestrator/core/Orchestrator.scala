@@ -1,8 +1,10 @@
 package be.brkaisin.graph.orchestrator.core
 
-import be.brkaisin.graph.orchestrator.models.Node.NodeId
+import be.brkaisin.graph.orchestrator.globals.OptionsTuple
+import be.brkaisin.graph.orchestrator.models.Node.{liftInputToOptions, NodeId}
 import be.brkaisin.graph.orchestrator.models.NodeResult.*
 import be.brkaisin.graph.orchestrator.models.{Edge, Graph, Node, NodeResult}
+import be.brkaisin.graph.orchestrator.utils.OptionFields
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 import zio.*
@@ -10,15 +12,15 @@ import zio.*
 object Orchestrator:
 
   enum Command:
-    case AddNode[I, O, E](
+    case AddNode[I <: Tuple, O, E](
         node: Node[I, O, E],
         replyTo: ActorRef[Confirmation]
-    )
+    )(using val optionFields: OptionFields[OptionsTuple[I]])
     case RemoveNode(
         id: NodeId,
         replyTo: ActorRef[Confirmation]
     )
-    case ExecuteNode[I, O, E](
+    case ExecuteNode[I <: Tuple, O, E](
         node: Node[I, O, E],
         input: I,
         replyTo: ActorRef[Confirmation]
@@ -57,7 +59,8 @@ object Orchestrator:
   )(using trace: Trace, unsafe: Unsafe): Behavior[Command] = Behaviors.setup {
     context =>
       Behaviors.receiveMessage {
-        case AddNode(node, replyTo) =>
+        case command @ AddNode(node, replyTo) =>
+          import command.optionFields
           context.log.info(s"Adding node with ID: ${node.id}")
 
           val resultAdapter: ActorRef[NodeResult[?, ?]] =
@@ -71,7 +74,7 @@ object Orchestrator:
 
           // spawn node actor without dependencies (they will be updated later)
           val nodeActor = context.spawn(
-            NodeActor(node, List.empty, resultAdapter),
+            NodeActor(Node.liftInputToOptions(node), List.empty, resultAdapter),
             s"node-${node.id}"
           )
 
@@ -101,7 +104,10 @@ object Orchestrator:
           )
 
           state.nodeActors.get(node.id).foreach { actor =>
-            actor ! Input(input)
+            // send each field of the input separately as an InputField command
+            input.productIterator.zipWithIndex.foreach { case (field, index) =>
+              actor ! InputField(index, field)
+            }
           }
           replyTo ! Ack
           Behaviors.same
